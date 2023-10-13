@@ -1,0 +1,16 @@
+{
+  "name": "protobuf-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile:proto": "pbjs -t static-module -w commonjs -o data_explorer.js data_explorer.proto"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "grpc": "^1.24.11",
+    "protobufjs": "^6.11.4"
+  }
+}
