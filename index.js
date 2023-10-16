@@ -1,28 +1,39 @@
 const grpc = require('grpc');
-const protobuf = require('protobufjs');
-const root = protobuf.loadSync('data_explorer.js');
+const path = require('path');
+const protoLoader = require('@grpc/proto-loader');
 
-const GetSensorDataRequest = root.lookupType('CollectIOT.Api.Explorer.Protos.GetSensorDataRequest');
-const SensorData = root.lookupType('CollectIOT.Api.Explorer.Protos.SensorData');
+// Cargar las definiciones generadas
+const PROTO_PATH = path.resolve(__dirname, 'data_explorer.proto');
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, { keepCase: true, longs: String, enums: String, defaults: true, oneofs: true });
+const dataExplorerProto = grpc.loadPackageDefinition(packageDefinition);
 
-const grpcServerAddress = 'https://dev.heliotics.com';
+// Dirección y puerto del servidor gRPC
+const serverAddress = 'https://dev.heliotics.com';
 
-// gRPC client
-const client = new proto.DataExplorerGrpcService(grpcServerAddress, grpc.credentials.createInsecure());
+// Crear un cliente gRPC
+const client = new dataExplorerProto.DataExplorerGrpcService(serverAddress, grpc.credentials.createInsecure());
 
-const sensorId = '17d88eca-5bbb-49e9-9da3-3329f0358059';
-llectIOT.Api.Explorer.Protos
+// Crear una solicitud para GetSensorDataStream
+const getSensorDataRequest = {
+  sensor_id: '17d88eca-5bbb-49e9-9da3-3329f0358059',
+};
 
-// GetSensorDataRequest request
-const requestMessage = GetSensorDataRequest.create({
-  sensor_id: sensorId,
+// Llamar al método GetSensorDataStream del servicio
+const call = client.GetSensorDataStream(getSensorDataRequest);
+
+// Manejar eventos de la transmisión
+call.on('data', (sensorData) => {
+  console.log('Received SensorData:', sensorData);
 });
 
-client.GetSensorDataStream(requestMessage, (error, response) => {
-  if (error) {
-    console.error('Error:', error);
-  } else {
-    const sensorData = SensorData.toObject(response, { defaults: true });
-    console.log('Sensor information:', sensorData);
-  }
+call.on('end', () => {
+  console.log('Streaming ended');
+});
+
+call.on('error', (err) => {
+  console.error('Error:', err);
+});
+
+call.on('status', (status) => {
+  console.log('Status:', status);
 });
