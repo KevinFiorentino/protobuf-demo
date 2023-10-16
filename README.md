@@ -1,6 +1,6 @@
 # Protobuf Demo
 
-## Compile Protobuf
+## Compile Protobuf and Exec Script
 
 - `npm install`
 - `npm bin grpc-tools`
